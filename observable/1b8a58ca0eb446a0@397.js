@@ -20,7 +20,7 @@ Inputs.range([-90, 90], {
 })
 )}
 
-function* _4(d3,size,styles,graticule,countries,zones,color,path)
+function* _4(d3,size,styles,graticule,countries,zones,color,path,projection)
 {
   const svg = d3
     .create("svg")
@@ -64,6 +64,19 @@ function* _4(d3,size,styles,graticule,countries,zones,color,path)
     countriesPath.attr("d", path);
     zonesPath.attr("d", path);
   }
+
+  const sensitivity = 0.25;
+  svg.call(
+    d3
+      .drag()
+      .on("drag", (event) => {
+        const [lon, lat] = projection.rotate();
+        const nextLon = lon + event.dx * sensitivity;
+        const nextLat = Math.max(-90, Math.min(90, lat - event.dy * sensitivity));
+        projection.rotate([nextLon, nextLat]);
+        render();
+      })
+  );
 
   yield svg.node();
   render();
@@ -211,7 +224,7 @@ export default function define(runtime, observer) {
   main.variable(observer("longitude")).define("longitude", ["Generators", "viewof longitude"], (G, _) => G.input(_));
   main.variable(observer("viewof latitude")).define("viewof latitude", ["Inputs"], _latitude);
   main.variable(observer("latitude")).define("latitude", ["Generators", "viewof latitude"], (G, _) => G.input(_));
-  main.variable(observer()).define(["d3","size","styles","graticule","countries","zones","color","path"], _4);
+  main.variable(observer()).define(["d3","size","styles","graticule","countries","zones","color","path","projection"], _4);
   main.variable(observer()).define(["md"], _5);
   main.variable(observer()).define(["md"], _6);
   main.variable(observer()).define(["md"], _7);
