@@ -1,0 +1,14 @@
+{
+  "name": "1b8a58ca0eb446a0",
+  "main": "1b8a58ca0eb446a0@397.js",
+  "version": "397.0.0",
+  "homepage": "https://observablehq.com/d/1b8a58ca0eb446a0",
+  "author": {
+    "name": "Chian",
+    "url": "https://observablehq.com/@chian"
+  },
+  "type": "module",
+  "peerDependencies": {
+    "@observablehq/runtime": "4 - 5"
+  }
+}
