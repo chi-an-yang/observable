@@ -40,6 +40,8 @@ function* _4(d3,size,styles,graticule,countries,zones,color,path)
     .datum(graticule)
     .attr("class", "graticule");
 
+  const projection = path.projection();
+
   const countriesPath = svg
     .selectAll(".country")
     .data(countries.features)
@@ -64,6 +66,21 @@ function* _4(d3,size,styles,graticule,countries,zones,color,path)
     countriesPath.attr("d", path);
     zonesPath.attr("d", path);
   }
+
+  const clampLatitude = (value) => Math.max(-90, Math.min(90, value));
+  const degreesPerPixel = 360 / size;
+
+  const drag = d3
+    .drag()
+    .on("drag", (event) => {
+      const [lambda, phi, gamma] = projection.rotate();
+      const nextLambda = lambda + event.dx * degreesPerPixel;
+      const nextPhi = clampLatitude(phi - event.dy * degreesPerPixel);
+      projection.rotate([nextLambda, nextPhi, gamma || 0]);
+      render();
+    });
+
+  svg.call(drag);
 
   yield svg.node();
   render();
