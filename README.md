@@ -1,2 +1,2 @@
-# observable-
+# observable
 observable vibe coding
