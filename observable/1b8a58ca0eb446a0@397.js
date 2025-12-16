@@ -4,23 +4,15 @@ function _1(md){return(
 md`# Timezones Globe`
 )}
 
-function _longitude(Inputs){return(
-Inputs.range([-180, 180], {
-  value: 5,
-  label: "Longitude",
-  step: 1
-})
+function _longitude(){return(
+5
 )}
 
-function _latitude(Inputs){return(
-Inputs.range([-90, 90], {
-  value: 46,
-  label: "Latitude",
-  step: 1
-})
+function _latitude(){return(
+46
 )}
 
-function* _4(d3,size,styles,graticule,countries,zones,color,path)
+function* _4(d3,size,styles,graticule,countries,zones,color,path,projection)
 {
   const svg = d3
     .create("svg")
@@ -64,6 +56,29 @@ function* _4(d3,size,styles,graticule,countries,zones,color,path)
     countriesPath.attr("d", path);
     zonesPath.attr("d", path);
   }
+
+  const drag = d3
+    .drag()
+    .on("start", (event) => {
+      event.sourceEvent?.preventDefault();
+      svg.classed("dragging", true);
+      drag.startRotation = projection.rotate();
+    })
+    .on("drag", (event) => {
+      const [lambda, phi, gamma = 0] = drag.startRotation || projection.rotate();
+      const rotation = [
+        lambda + event.dx / 2,
+        Math.max(-90, Math.min(90, phi - event.dy / 2)),
+        gamma
+      ];
+      projection.rotate(rotation);
+      render();
+    })
+    .on("end", () => {
+      svg.classed("dragging", false);
+    });
+
+  svg.call(drag);
 
   yield svg.node();
   render();
@@ -144,6 +159,7 @@ function _styles(){return(
   display: table;
   margin: 0 auto;
   overflow: visible;
+  cursor: grab;
 }
 .sphere {
   fill: none;
@@ -207,11 +223,9 @@ export default function define(runtime, observer) {
   ]);
   main.builtin("FileAttachment", runtime.fileAttachments(name => fileAttachments.get(name)));
   main.variable(observer()).define(["md"], _1);
-  main.variable(observer("viewof longitude")).define("viewof longitude", ["Inputs"], _longitude);
-  main.variable(observer("longitude")).define("longitude", ["Generators", "viewof longitude"], (G, _) => G.input(_));
-  main.variable(observer("viewof latitude")).define("viewof latitude", ["Inputs"], _latitude);
-  main.variable(observer("latitude")).define("latitude", ["Generators", "viewof latitude"], (G, _) => G.input(_));
-  main.variable(observer()).define(["d3","size","styles","graticule","countries","zones","color","path"], _4);
+  main.variable(observer("longitude")).define("longitude", _longitude);
+  main.variable(observer("latitude")).define("latitude", _latitude);
+  main.variable(observer()).define(["d3","size","styles","graticule","countries","zones","color","path","projection"], _4);
   main.variable(observer()).define(["md"], _5);
   main.variable(observer()).define(["md"], _6);
   main.variable(observer()).define(["md"], _7);
